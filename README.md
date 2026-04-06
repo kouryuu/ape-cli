@@ -48,11 +48,15 @@ Pipe-in, pipe-out, zero interactivity — a composable Unix tool for AI agent wo
 Requires [Bun](https://bun.sh) runtime.
 
 ```bash
-# Clone and install
-git clone <repo-url> && cd ape_cli
-bun install
+# Run directly without installing
+bunx ape-cli --help
 
-# Link globally
+# Or install globally
+bun install -g ape-cli
+
+# Or clone and link locally
+git clone https://github.com/kouryuu/ape-cli.git && cd ape-cli
+bun install
 bun link
 ```
 
