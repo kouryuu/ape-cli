@@ -1,5 +1,5 @@
 {
-  "name": "ape-cli",
+  "name": "@rodkings/ape-cli",
   "version": "1.0.0",
   "type": "module",
   "description": "APE-inspired CLI that improves prompts using LLM-as-judge. Designed as an AI skill.",
