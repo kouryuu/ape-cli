@@ -28,6 +28,15 @@ ENVIRONMENT
   OPENAI_API_KEY               Required for --provider openai
   ANTHROPIC_API_KEY            Required for --provider claude
 
+  Keys are loaded from (in priority order):
+    1. Environment variables
+    2. ~/.config/ape/.env
+
+  One-time setup:
+    mkdir -p ~/.config/ape
+    echo "OPENAI_API_KEY=sk-..." > ~/.config/ape/.env
+    chmod 600 ~/.config/ape/.env
+
 EXAMPLES
   echo "Summarize this article" | ape              # all improved variants, plain text
   echo "Summarize this article" | ape --single      # best variant only
@@ -115,7 +124,7 @@ function resolveProvider(flags: {
     else if (anthropicKey) providerName = "claude";
     else {
       process.stderr.write(
-        "Error: No API key found. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.\n"
+        "Error: No API key found. Set OPENAI_API_KEY or ANTHROPIC_API_KEY,\nor create ~/.config/ape/.env with your key.\n"
       );
       process.exit(1);
     }
@@ -151,6 +160,29 @@ function resolveProvider(flags: {
   process.exit(1);
 }
 
+async function loadConfigEnv(): Promise<void> {
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  if (!home) return;
+
+  const configPath = `${home}/.config/ape/.env`;
+  try {
+    const text = await Bun.file(configPath).text();
+    for (const line of text.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const eq = trimmed.indexOf("=");
+      if (eq === -1) continue;
+      const key = trimmed.slice(0, eq).trim();
+      const value = trimmed.slice(eq + 1).trim();
+      if (!process.env[key]) {
+        process.env[key] = value;
+      }
+    }
+  } catch {
+    // Config file doesn't exist — that's fine
+  }
+}
+
 async function main() {
   const flags = parseArgs(Bun.argv);
 
@@ -158,6 +190,8 @@ async function main() {
     process.stdout.write(HELP + "\n");
     process.exit(0);
   }
+
+  await loadConfigEnv();
 
   const input = (await Bun.stdin.text()).trim();
 
