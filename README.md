@@ -1,4 +1,4 @@
-# 🦍 prompt-improver
+# 🦍 ape
 
 **Your prompts, evolved.** A CLI tool that uses LLMs to automatically improve your prompts — inspired by the [Automatic Prompt Engineer (APE)](https://arxiv.org/abs/2211.01910) paper.
 
@@ -9,7 +9,7 @@
 
 ## 🐒 What is this?
 
-`prompt-improver` takes a prompt you've written, generates multiple improved variants using an LLM, scores each variant on clarity, specificity, and effectiveness, then ranks them best-to-worst. It's the APE paper's **generate → score → select** pipeline in your terminal.
+`ape` takes a prompt you've written, generates multiple improved variants using an LLM, scores each variant on clarity, specificity, and effectiveness, then ranks them best-to-worst. It's the APE paper's **generate → score → select** pipeline in your terminal.
 
 **Three stages, two API calls:**
 
@@ -31,7 +31,7 @@ This tool is designed to be invoked by AI agents as a **prompt improvement skill
 
 ```bash
 # AI agent calls this, parses JSON, uses the top-ranked variant
-echo "summarize this article for me" | prompt-improver --json --count 3
+echo "summarize this article for me" | ape --json --count 3
 ```
 
 The `--json` flag outputs machine-readable results that an AI can parse to:
@@ -56,7 +56,7 @@ bun install
 bun link
 ```
 
-Now you can use `prompt-improver` anywhere.
+Now you can use `ape` anywhere.
 
 ---
 
@@ -64,25 +64,25 @@ Now you can use `prompt-improver` anywhere.
 
 ```bash
 # Basic usage — pipe in a prompt
-echo "Summarize this article" | prompt-improver
+echo "Summarize this article" | ape
 
 # Read from a file
-cat prompt.txt | prompt-improver
+cat prompt.txt | ape
 
 # Generate 3 variants using Claude
-echo "Write a poem about space" | prompt-improver --provider claude --count 3
+echo "Write a poem about space" | ape --provider claude --count 3
 
 # JSON output for scripting / AI skill usage
-echo "Explain quantum computing" | prompt-improver --json
+echo "Explain quantum computing" | ape --json
 
 # Use with OpenRouter
-echo "Help me debug" | prompt-improver --base-url https://openrouter.ai/api/v1 --model openai/gpt-4o
+echo "Help me debug" | ape --base-url https://openrouter.ai/api/v1 --model openai/gpt-4o
 
 # Use with local Ollama
-echo "Translate this" | prompt-improver --base-url http://localhost:11434/v1 --model llama3
+echo "Translate this" | ape --base-url http://localhost:11434/v1 --model llama3
 
 # Extract just the top prompt
-echo "My prompt" | prompt-improver --json | jq -r '.[0].text'
+echo "My prompt" | ape --json | jq -r '.[0].text'
 ```
 
 ---

@@ -40,7 +40,7 @@ describe("CLI", () => {
     });
 
     expect(exitCode).toBe(0);
-    expect(stdout).toContain("prompt-improver");
+    expect(stdout).toContain("ape");
     expect(stdout).toContain("USAGE");
     expect(stdout).toContain("FLAGS");
     expect(stdout).toContain("--provider");
@@ -59,7 +59,7 @@ describe("CLI", () => {
     });
 
     expect(exitCode).toBe(0);
-    expect(stdout).toContain("prompt-improver");
+    expect(stdout).toContain("ape");
   });
 
   test("missing API key exits 1 with error", async () => {

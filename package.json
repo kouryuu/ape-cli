@@ -4,7 +4,7 @@
   "type": "module",
   "description": "APE-inspired CLI that improves prompts using LLM-as-judge. Designed as an AI skill.",
   "bin": {
-    "prompt-improver": "src/index.ts"
+    "ape": "src/index.ts"
   },
   "scripts": {
     "test": "bun test"

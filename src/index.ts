@@ -8,11 +8,11 @@ import { generateVariants, scoreVariants } from "./pipeline.js";
 import { formatPretty, formatJson } from "./format.js";
 
 const HELP = `
-🦍 prompt-improver — APE-inspired prompt improvement CLI
+🦍 ape — APE-inspired prompt improvement CLI
 
 USAGE
-  echo "your prompt" | prompt-improver [flags]
-  cat prompt.txt | prompt-improver [flags]
+  echo "your prompt" | ape [flags]
+  cat prompt.txt | ape [flags]
 
 FLAGS
   --provider <openai|claude>   API provider (auto-detected from env vars)
@@ -27,14 +27,14 @@ ENVIRONMENT
   ANTHROPIC_API_KEY            Required for --provider claude
 
 EXAMPLES
-  echo "Summarize this article" | prompt-improver
-  echo "Write a poem" | prompt-improver --provider claude --count 3
-  echo "Explain X" | prompt-improver --json | jq '.[0].text'
-  echo "Help me" | prompt-improver --base-url http://localhost:11434/v1
+  echo "Summarize this article" | ape
+  echo "Write a poem" | ape --provider claude --count 3
+  echo "Explain X" | ape --json | jq '.[0].text'
+  echo "Help me" | ape --base-url http://localhost:11434/v1
 
 AI SKILL USAGE
   An AI agent can invoke this tool to self-improve a user's prompt:
-  echo "user prompt" | prompt-improver --json --count 3
+  echo "user prompt" | ape --json --count 3
   Parse the JSON output and use the top-ranked variant.
 `.trim();
 
