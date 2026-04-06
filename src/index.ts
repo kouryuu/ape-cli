@@ -20,6 +20,7 @@ FLAGS
   --base-url <url>             Override API base URL
   --count <n>                  Number of variants to generate (default: 5)
   --json                       Output machine-readable JSON
+  --verbose                    Show full scored table with colors and bars
   --single                     Output only the highest-scoring variant
   --help                       Show this help
 
@@ -28,15 +29,16 @@ ENVIRONMENT
   ANTHROPIC_API_KEY            Required for --provider claude
 
 EXAMPLES
-  echo "Summarize this article" | ape
-  echo "Write a poem" | ape --provider claude --count 3
-  echo "Explain X" | ape --json | jq '.[0].text'
+  echo "Summarize this article" | ape              # all improved variants, plain text
+  echo "Summarize this article" | ape --single      # best variant only
+  echo "Write a poem" | ape --verbose               # full scored table with colors
+  echo "Explain X" | ape --json | jq '.[0].text'    # JSON output
   echo "Help me" | ape --base-url http://localhost:11434/v1
 
 AI SKILL USAGE
   An AI agent can invoke this tool to self-improve a user's prompt:
   echo "user prompt" | ape --json --single
-  Parse the JSON output and use the top-ranked variant.
+  Or simply: echo "user prompt" | ape --single
 `.trim();
 
 function parseArgs(argv: string[]): {
@@ -45,16 +47,18 @@ function parseArgs(argv: string[]): {
   baseUrl?: string;
   count: number;
   json: boolean;
+  verbose: boolean;
   single: boolean;
   help: boolean;
 } {
   const args = argv.slice(2);
-  const result = { count: 5, json: false, single: false, help: false } as {
+  const result = { count: 5, json: false, verbose: false, single: false, help: false } as {
     provider?: string;
     model?: string;
     baseUrl?: string;
     count: number;
     json: boolean;
+    verbose: boolean;
     single: boolean;
     help: boolean;
   };
@@ -75,6 +79,10 @@ function parseArgs(argv: string[]): {
         break;
       case "--json":
         result.json = true;
+        break;
+      case "--verbose":
+      case "-v":
+        result.verbose = true;
         break;
       case "--single":
         result.single = true;
@@ -162,22 +170,21 @@ async function main() {
 
   const { provider, model } = resolveProvider(flags);
 
-  process.stderr.write(`Generating ${flags.count} variants...\n`);
   const variants = await generateVariants(provider, input, model, flags.count);
-
-  process.stderr.write(`Scoring variants...\n`);
   const scored = await scoreVariants(provider, input, variants, model);
 
   const ranked: RankedVariant[] = scored
     .sort((a, b) => b.overall - a.overall)
     .map((v, i) => ({ ...v, rank: i + 1 }));
 
-  const output = flags.single ? ranked.slice(0, 1) : ranked;
+  const results = flags.single ? ranked.slice(0, 1) : ranked;
 
   if (flags.json) {
-    process.stdout.write(formatJson(output));
+    process.stdout.write(formatJson(results));
+  } else if (flags.verbose) {
+    process.stdout.write(formatPretty(results));
   } else {
-    process.stdout.write(formatPretty(output));
+    process.stdout.write(results.map((r) => r.text).join("\n") + "\n");
   }
 }
 

@@ -48,6 +48,8 @@ describe("CLI", () => {
     expect(stdout).toContain("--base-url");
     expect(stdout).toContain("--count");
     expect(stdout).toContain("--json");
+    expect(stdout).toContain("--verbose");
+    expect(stdout).toContain("--single");
     expect(stdout).toContain("ENVIRONMENT");
     expect(stdout).toContain("OPENAI_API_KEY");
     expect(stdout).toContain("ANTHROPIC_API_KEY");
