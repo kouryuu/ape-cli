@@ -1,0 +1,17 @@
+{
+  "name": "ape-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "APE-inspired CLI that improves prompts using LLM-as-judge. Designed as an AI skill.",
+  "bin": {
+    "prompt-improver": "src/index.ts"
+  },
+  "scripts": {
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "5.7.3",
+    "@types/bun": "1.1.14"
+  },
+  "license": "MIT"
+}
