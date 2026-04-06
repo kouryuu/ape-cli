@@ -20,6 +20,7 @@ FLAGS
   --base-url <url>             Override API base URL
   --count <n>                  Number of variants to generate (default: 5)
   --json                       Output machine-readable JSON
+  --single                     Output only the highest-scoring variant
   --help                       Show this help
 
 ENVIRONMENT
@@ -34,7 +35,7 @@ EXAMPLES
 
 AI SKILL USAGE
   An AI agent can invoke this tool to self-improve a user's prompt:
-  echo "user prompt" | ape --json --count 3
+  echo "user prompt" | ape --json --single
   Parse the JSON output and use the top-ranked variant.
 `.trim();
 
@@ -44,15 +45,17 @@ function parseArgs(argv: string[]): {
   baseUrl?: string;
   count: number;
   json: boolean;
+  single: boolean;
   help: boolean;
 } {
   const args = argv.slice(2);
-  const result = { count: 5, json: false, help: false } as {
+  const result = { count: 5, json: false, single: false, help: false } as {
     provider?: string;
     model?: string;
     baseUrl?: string;
     count: number;
     json: boolean;
+    single: boolean;
     help: boolean;
   };
 
@@ -72,6 +75,9 @@ function parseArgs(argv: string[]): {
         break;
       case "--json":
         result.json = true;
+        break;
+      case "--single":
+        result.single = true;
         break;
       case "--help":
       case "-h":
@@ -166,10 +172,12 @@ async function main() {
     .sort((a, b) => b.overall - a.overall)
     .map((v, i) => ({ ...v, rank: i + 1 }));
 
+  const output = flags.single ? ranked.slice(0, 1) : ranked;
+
   if (flags.json) {
-    process.stdout.write(formatJson(ranked));
+    process.stdout.write(formatJson(output));
   } else {
-    process.stdout.write(formatPretty(ranked));
+    process.stdout.write(formatPretty(output));
   }
 }
 
