@@ -125,4 +125,98 @@ describe("formatPretty", () => {
     // Red escape code should appear for score 3.7
     expect(output).toContain("\x1b[31m");
   });
+
+  test("handles single variant", () => {
+    const single: RankedVariant[] = [
+      {
+        rank: 1,
+        text: "Only variant",
+        reasoning: "Only one",
+        scores: { clarity: 10, specificity: 10, effectiveness: 10 },
+        overall: 10,
+        feedback: "Perfect",
+      },
+    ];
+    const output = formatPretty(single);
+    expect(output).toContain("1 variants generated and scored");
+    expect(output).toContain("#1");
+    expect(output).toContain("10.0/10");
+    expect(output).not.toContain("#2");
+  });
+
+  test("handles empty results array", () => {
+    const output = formatPretty([]);
+    expect(output).toContain("0 variants generated and scored");
+  });
+
+  test("score exactly 8 gets green", () => {
+    const atBoundary: RankedVariant[] = [
+      {
+        rank: 1,
+        text: "Boundary test",
+        reasoning: "Test",
+        scores: { clarity: 8, specificity: 8, effectiveness: 8 },
+        overall: 8.0,
+        feedback: "On boundary",
+      },
+    ];
+    const output = formatPretty(atBoundary);
+    expect(output).toContain("\x1b[32m");
+  });
+
+  test("score exactly 6 gets yellow", () => {
+    const atBoundary: RankedVariant[] = [
+      {
+        rank: 1,
+        text: "Boundary test",
+        reasoning: "Test",
+        scores: { clarity: 6, specificity: 6, effectiveness: 6 },
+        overall: 6.0,
+        feedback: "On boundary",
+      },
+    ];
+    const output = formatPretty(atBoundary);
+    expect(output).toContain("\x1b[33m");
+  });
+
+  test("score 5.9 gets red", () => {
+    const belowBoundary: RankedVariant[] = [
+      {
+        rank: 1,
+        text: "Below boundary",
+        reasoning: "Test",
+        scores: { clarity: 5, specificity: 6, effectiveness: 6 },
+        overall: 5.9,
+        feedback: "Just below",
+      },
+    ];
+    const output = formatPretty(belowBoundary);
+    // The overall score bar should be red
+    expect(output).toContain("\x1b[31m");
+  });
+});
+
+describe("formatJson", () => {
+  test("handles single element array", () => {
+    const single: RankedVariant[] = [
+      {
+        rank: 1,
+        text: "Only one",
+        reasoning: "Single",
+        scores: { clarity: 9, specificity: 9, effectiveness: 9 },
+        overall: 9,
+        feedback: "Great",
+      },
+    ];
+    const output = formatJson(single);
+    const parsed = JSON.parse(output);
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].text).toBe("Only one");
+  });
+
+  test("handles empty array", () => {
+    const output = formatJson([]);
+    const parsed = JSON.parse(output);
+    expect(parsed).toHaveLength(0);
+  });
 });

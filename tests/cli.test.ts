@@ -67,7 +67,7 @@ describe("CLI", () => {
   test("missing API key exits 1 with error", async () => {
     const { stderr, exitCode } = await runCLIToCompletion([], {
       stdin: "test prompt",
-      env: { OPENAI_API_KEY: "", ANTHROPIC_API_KEY: "" },
+      env: { OPENAI_API_KEY: "", ANTHROPIC_API_KEY: "", HOME: "/nonexistent" },
     });
 
     expect(exitCode).toBe(1);
@@ -92,5 +92,34 @@ describe("CLI", () => {
 
     expect(exitCode).toBe(1);
     expect(stderr).toContain("Unknown flag");
+  });
+
+  test("--help documents ~/.config/ape/.env", async () => {
+    const { stdout } = await runCLIToCompletion(["--help"], {
+      stdin: "",
+    });
+
+    expect(stdout).toContain("~/.config/ape/.env");
+    expect(stdout).toContain("chmod 600");
+  });
+
+  test("whitespace-only stdin exits 1 with no prompt error", async () => {
+    const { stderr, exitCode } = await runCLIToCompletion([], {
+      stdin: "   \n  \t  ",
+      env: { OPENAI_API_KEY: "sk-test" },
+    });
+
+    expect(exitCode).toBe(1);
+    expect(stderr).toContain("No prompt provided");
+  });
+
+  test("missing API key error mentions ~/.config/ape/.env", async () => {
+    const { stderr, exitCode } = await runCLIToCompletion([], {
+      stdin: "test prompt",
+      env: { OPENAI_API_KEY: "", ANTHROPIC_API_KEY: "", HOME: "/nonexistent" },
+    });
+
+    expect(exitCode).toBe(1);
+    expect(stderr).toContain("~/.config/ape/.env");
   });
 });

@@ -114,6 +114,45 @@ describe("OpenAIProvider", () => {
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://api.example.com/v1/chat/completions");
   });
+
+  test("uses default base URL when none provided", async () => {
+    const fetchMock = mockFetch({
+      choices: [{ message: { content: '{}' } }],
+    });
+
+    const provider = new OpenAIProvider("sk-test");
+    await provider.chatCompletion({
+      model: "m",
+      temperature: 0,
+      systemPrompt: "s",
+      userMessage: "u",
+    });
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.openai.com/v1/chat/completions");
+  });
+
+  test("handles non-JSON error response body gracefully", async () => {
+    const fn = mock(() =>
+      Promise.resolve(
+        new Response("Internal Server Error", {
+          status: 500,
+          headers: { "Content-Type": "text/plain" },
+        })
+      )
+    );
+    globalThis.fetch = fn as unknown as typeof fetch;
+
+    const provider = new OpenAIProvider("sk-test");
+    expect(
+      provider.chatCompletion({
+        model: "m",
+        temperature: 0,
+        systemPrompt: "s",
+        userMessage: "u",
+      })
+    ).rejects.toThrow("API error: 500");
+  });
 });
 
 describe("ClaudeProvider", () => {
@@ -178,5 +217,53 @@ describe("ClaudeProvider", () => {
         userMessage: "user",
       })
     ).rejects.toThrow("Invalid API key");
+  });
+
+  test("throws generic error when no error message in response", async () => {
+    mockFetch({}, 503);
+
+    const provider = new ClaudeProvider("sk-ant-test");
+    expect(
+      provider.chatCompletion({
+        model: "claude-sonnet-4-20250514",
+        temperature: 0.5,
+        systemPrompt: "sys",
+        userMessage: "user",
+      })
+    ).rejects.toThrow("API error: 503");
+  });
+
+  test("uses default base URL when none provided", async () => {
+    const fetchMock = mockFetch({
+      content: [{ text: '"ok": true}' }],
+    });
+
+    const provider = new ClaudeProvider("sk-ant-test");
+    await provider.chatCompletion({
+      model: "claude-sonnet-4-20250514",
+      temperature: 0.5,
+      systemPrompt: "sys",
+      userMessage: "user",
+    });
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.anthropic.com/v1/messages");
+  });
+
+  test("strips trailing slashes from base URL", async () => {
+    const fetchMock = mockFetch({
+      content: [{ text: '"ok": true}' }],
+    });
+
+    const provider = new ClaudeProvider("sk-ant-test", "https://custom.api.com/v1//");
+    await provider.chatCompletion({
+      model: "m",
+      temperature: 0,
+      systemPrompt: "s",
+      userMessage: "u",
+    });
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://custom.api.com/v1/messages");
   });
 });

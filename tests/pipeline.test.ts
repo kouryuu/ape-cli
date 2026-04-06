@@ -59,6 +59,25 @@ describe("generateVariants", () => {
     const provider = new MockProvider(["not json"]);
     expect(generateVariants(provider, "test", "gpt-4o-mini", 3)).rejects.toThrow();
   });
+
+  test("returns undefined when response JSON has no variants key", async () => {
+    const provider = new MockProvider([JSON.stringify({ prompts: [] })]);
+    const result = await generateVariants(provider, "test", "gpt-4o-mini", 3);
+    expect(result).toBeUndefined();
+  });
+
+  test("returns empty array when variants is empty", async () => {
+    const provider = new MockProvider([JSON.stringify({ variants: [] })]);
+    const variants = await generateVariants(provider, "test", "gpt-4o-mini", 0);
+    expect(variants).toHaveLength(0);
+  });
+
+  test("includes original prompt and count in user message", async () => {
+    const provider = new MockProvider([MOCK_GENERATE_RESPONSE]);
+    await generateVariants(provider, "a very specific prompt here", "gpt-4o-mini", 7);
+    expect(provider.calls[0].userMessage).toContain("a very specific prompt here");
+    expect(provider.calls[0].userMessage).toContain("7");
+  });
 });
 
 describe("scoreVariants", () => {
@@ -120,6 +139,37 @@ describe("scoreVariants", () => {
     expect(provider.calls[0].userMessage).toContain("original prompt");
     expect(provider.calls[0].userMessage).toContain("Variant 1");
     expect(provider.calls[0].userMessage).toContain("Variant 3");
+  });
+
+  test("throws when score response is invalid JSON", async () => {
+    const provider = new MockProvider(["not valid json"]);
+    expect(scoreVariants(provider, "original", variants, "gpt-4o-mini")).rejects.toThrow();
+  });
+
+  test("uses empty string when feedback is missing", async () => {
+    const noFeedbackScores = JSON.stringify({
+      scores: [
+        { clarity: 8, specificity: 7, effectiveness: 9 },
+        { clarity: 6, specificity: 5, effectiveness: 7 },
+        { clarity: 9, specificity: 9, effectiveness: 9 },
+      ],
+    });
+    const provider = new MockProvider([noFeedbackScores]);
+    const scored = await scoreVariants(provider, "original", variants, "gpt-4o-mini");
+    expect(scored[0].feedback).toBe("");
+    expect(scored[1].feedback).toBe("");
+  });
+
+  test("handles single variant correctly", async () => {
+    const singleVariant = [{ text: "Only one", reasoning: "Just this" }];
+    const singleScore = JSON.stringify({
+      scores: [{ clarity: 10, specificity: 10, effectiveness: 10, feedback: "Perfect" }],
+    });
+    const provider = new MockProvider([singleScore]);
+    const scored = await scoreVariants(provider, "original", singleVariant, "gpt-4o-mini");
+    expect(scored).toHaveLength(1);
+    expect(scored[0].overall).toBe(10);
+    expect(scored[0].feedback).toBe("Perfect");
   });
 });
 
