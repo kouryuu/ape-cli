@@ -1,13 +1,15 @@
 {
   "name": "@rodkings/ape-cli",
-  "version": "1.3.0",
+  "version": "1.4.1",
   "type": "module",
   "description": "APE-inspired CLI that improves prompts using LLM-as-judge. Designed as an AI skill.",
   "bin": {
     "ape": "src/index.ts"
   },
   "files": [
-    "src"
+    "src",
+    "LICENSE",
+    "README.md"
   ],
   "keywords": [
     "prompt-engineering",

@@ -197,4 +197,10 @@ Dev dependencies (`typescript`, `@types/bun`) are only used for type-checking.
 
 ---
 
+## 📄 License
+
+[MIT](./LICENSE) © 2025 Rodrigo Reyes
+
+---
+
 _Built with 🍌 by an ape who believes your prompts deserve better._
